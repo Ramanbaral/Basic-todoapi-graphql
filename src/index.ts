@@ -28,7 +28,7 @@ const typeDefs = `
 
   type Query {
     todos : [Todo]
-    todo(id: Int) : Todo!
+    todo(id: Int) : Todo
   }
 
   type Mutation {
@@ -42,9 +42,8 @@ const resolvers = {
   Query: {
     todos: () => todos,
     todo: (_, { id }) => {
-      const todo = todos.find((t) => t.id === parseInt(id))
-      if(!todo) return false;
-      return todo; 
+      const todo = todos.find((t) => t.id === parseInt(id));
+      if (todo) return todo;
     },
   },
 
@@ -61,7 +60,7 @@ const resolvers = {
 
     deleteTODO: (_, { id }) => {
       const todoIndex = todos.findIndex((todo) => todo.id == id);
-      if(todoIndex === -1) return false;
+      if (todoIndex === -1) return false;
 
       todos.splice(todoIndex, 1);
       return true;
@@ -69,7 +68,7 @@ const resolvers = {
 
     updateStatus: (_, { id, newStatus }) => {
       const todoIndex = todos.findIndex((todo) => todo.id === parseInt(id));
-      if(todoIndex === -1) return false;
+      if (todoIndex === -1) return false;
       todos[todoIndex].status = newStatus;
       return true;
     },
