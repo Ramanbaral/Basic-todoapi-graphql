@@ -1,75 +1,77 @@
-import express from "express";
-import { createHandler } from "graphql-http/lib/use/express";
-import { buildSchema } from "graphql";
-import { ruruHTML } from "ruru/server";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 
-const schema = buildSchema(`
+const todos = [
+  {
+    id: 1,
+    title: "some todo",
+    status: "NOT_DONE",
+    user: 5,
+  },
+  {
+    id: 2,
+    title: "some todo22",
+    status: "DOING",
+    user: 3,
+  },
+];
+
+const typeDefs = `
+  type Todo {
+    id: ID!
+    title: String! 
+    status: String! 
+    user: Int! 
+  }
+
   type Query {
-    hello: String! 
-    user: User
-    random(n: Int!): [Float]
-    rollThreeDice: [Int]
-    getMsg: String!
+    todos : [Todo]
+    todo(n: Int) : Todo!
   }
 
-  type User {
-    id: ID 
-    name: String 
-    email: String
-}
+  type Mutation {
+    addTODO(title: String, user: Int) : String
+    deleteTODO(id: ID) : Boolean
+    updateStatus(id: ID) : Boolean
+  }
+`;
 
-type Mutation {
-  setMsg(msg: String!): String
-}
-`);
-
-const m: {msg?: string} = {msg: 'smt'};
-
-const root = {
-  hello() {
-    return "Hello world from graphql";
+const resolvers = {
+  Query: {
+    todos: () => todos,
+    todo: (_, { n }) => {
+      return todos[n];
+    },
   },
-  user() {
-    return {
-      id: 123,
-      name: "user",
-      email: "test@test.com",
-    };
-  },
-  random(args: { n: number }) {
-    let out: number[] = [];
-    for (let i = 0; i < args.n; i++) {
-      out.push(100 * Math.random());
+
+  Mutation: {
+    addTODO: (_, { title, user }) => {
+      todos.push({
+        id: todos.length + 1,
+        title,
+        status: "NOT_DONE",
+        user,
+      });
+      return "TODO Successfully Added";
+    },
+
+    deleteTODO: (_, { id }) => {
+      //logic to delete todo
+    },
+
+    updateStatus: (_, { id }) => {
+      //logic to update status 
     }
-    return out;
   },
-  rollThreeDice() {
-    return [1, 2, 3].map((_) => Math.floor(1 + Math.random() * 6));
-  },
-  setMsg({ msg }: {msg: string}) {
-    m['msg'] = msg;
-  }, 
-  getMsg() {
-    return m['msg'];
-  }
 };
 
-const PORT = 3000;
-const app = express();
-
-app.get("/", (req, res) => {
-  res.type(".html");
-  res.end(ruruHTML({ endpoint: "/graphql" }));
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
 });
 
-app.all(
-  "/graphql",
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  })
-);
-
-app.listen(PORT, () => {
-  console.log(`Server Listening on: ${PORT} ...`);
+startStandaloneServer(server, {
+  listen: { port: 3000 },
+}).then(({ url }) => {
+  console.log(`server ready on : ${url}`);
 });

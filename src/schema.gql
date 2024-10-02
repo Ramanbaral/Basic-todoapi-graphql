@@ -1,0 +1,14 @@
+type Todo {
+  title: String! 
+  status: String! 
+  user: Int! 
+}
+
+type Query {
+  todos : [todo]
+  todo(n: Int) : todo!
+}
+
+type Mutation {
+
+}
