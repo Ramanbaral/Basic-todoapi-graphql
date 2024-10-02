@@ -1,7 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-const todos = [
+let todos = [
   {
     id: 1,
     title: "some todo",
@@ -30,9 +30,9 @@ const typeDefs = `
   }
 
   type Mutation {
-    addTODO(title: String, user: Int) : String
+    addTODO(title: String, user: Int) : Boolean
     deleteTODO(id: ID) : Boolean
-    updateStatus(id: ID) : Boolean
+    updateStatus(id: ID, newStatus: String) : Boolean
   }
 `;
 
@@ -52,16 +52,23 @@ const resolvers = {
         status: "NOT_DONE",
         user,
       });
-      return "TODO Successfully Added";
+      return true;
     },
 
     deleteTODO: (_, { id }) => {
-      //logic to delete todo
+      const todoIndex = todos.findIndex((todo) => todo.id == id);
+      if(todoIndex === -1) return false;
+
+      todos.splice(todoIndex, 1);
+      return true;
     },
 
-    updateStatus: (_, { id }) => {
-      //logic to update status 
-    }
+    updateStatus: (_, { id, newStatus }) => {
+      const todoIndex = todos.findIndex((todo) => todo.id === parseInt(id));
+      if(todoIndex === -1) return false;
+      todos[todoIndex].status = newStatus;
+      return true;
+    },
   },
 };
 
