@@ -1,6 +1,8 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
+import { generateRandomNumber } from "./utils";
+
 let todos = [
   {
     id: 1,
@@ -26,7 +28,7 @@ const typeDefs = `
 
   type Query {
     todos : [Todo]
-    todo(n: Int) : Todo!
+    todo(id: Int) : Todo!
   }
 
   type Mutation {
@@ -39,15 +41,17 @@ const typeDefs = `
 const resolvers = {
   Query: {
     todos: () => todos,
-    todo: (_, { n }) => {
-      return todos[n];
+    todo: (_, { id }) => {
+      const todo = todos.find((t) => t.id === parseInt(id))
+      if(!todo) return false;
+      return todo; 
     },
   },
 
   Mutation: {
     addTODO: (_, { title, user }) => {
       todos.push({
-        id: todos.length + 1,
+        id: todos.length + generateRandomNumber(),
         title,
         status: "NOT_DONE",
         user,
